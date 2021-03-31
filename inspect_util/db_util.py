@@ -4,6 +4,9 @@ import datetime
 from dataclasses import dataclass
 
 DBRP_DIR = "/Users/samdillard/.influxdb/data/telegraf/autogen"
+# For testing
+# v1_shard = f"{v1_dbrp}/106" 
+# v1_file = f"{v1_shard}/000000006-000000002.tsm"
 
 def load_shard_names(dbrp_dir):
     shard_names = listdir(dbrp_dir)
@@ -49,11 +52,10 @@ class TSMFile:
     max_blk: int
     idx_type: str
 
+# subprocess.run(f"influx_inspect dumptsm -blocks ")
 
-    
+# for file_path in load_file_paths(DBRP_DIR):
+#     subprocess.run(f"influx_inspect dumptsm -blocks {file_path}", shell=True)
 
-for file_path in load_file_paths(DBRP_DIR):
-    subprocess.run(f"influx_inspect dumptsm -blocks {file_path}", shell=True)
-    
     
 

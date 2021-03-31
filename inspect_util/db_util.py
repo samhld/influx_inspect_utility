@@ -3,10 +3,10 @@ import subprocess
 import datetime
 from dataclasses import dataclass
 
-DBRP_DIR = "/Users/samdillard/.influxdb/data/telegraf/autogen"
+v1_dbrp = "/Users/samdillard/.influxdb/data/telegraf/autogen"
 # For testing
-# v1_shard = f"{v1_dbrp}/106" 
-# v1_file = f"{v1_shard}/000000006-000000002.tsm"
+v1_shard = f"{v1_dbrp}/106" 
+v1_file = f"{v1_shard}/000000001-000000001.tsm"
 
 def load_shard_names(dbrp_dir):
     shard_names = listdir(dbrp_dir)
@@ -35,14 +35,17 @@ class Block:
     blk: int
     chk: int
     offs: int
-    blen: int
+    blk_len: int
     dtype: str
     min_time: datetime.datetime
     max_time: datetime.datetime
     pts: int
     enc: str
     tag_len: int
-    val_len: int
+    tag_val_len: int
+
+    def __len__(self):
+        return len(self.__dict__)
 
 @dataclass
 class TSMFile:
@@ -52,7 +55,17 @@ class TSMFile:
     max_blk: int
     idx_type: str
 
-# subprocess.run(f"influx_inspect dumptsm -blocks ")
+    def __len__(self):
+        return len(self.__dict__)
+
+def gather(v1_file):
+    proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
+                                    shell=True,
+                                    stdout=subprocess.PIPE,
+                                    text=True)
+    inspect_output = proc.stdout
+    return inspect_output
+
 
 # for file_path in load_file_paths(DBRP_DIR):
 #     subprocess.run(f"influx_inspect dumptsm -blocks {file_path}", shell=True)

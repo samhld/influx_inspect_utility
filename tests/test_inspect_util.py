@@ -30,8 +30,8 @@ block_kwargs = {
                 "max_time": datetime.datetime.now(),
                 "pts": 50,
                 "enc": "gorilla",
-                "tag_len": 10,
-                "tag_val_len": 10
+                "tag_len": 10
+                # "tag_val_len": 10
                 }
 
 tsmfile_kwargs = {
@@ -39,15 +39,21 @@ tsmfile_kwargs = {
                 "idx_size": 20,
                 "min_blk": 40,
                 "max_blk": 1_750,
-                "idx_type": "in-mem"}
-# @pytest
+                "idx_type": "in-mem",
+                "points_per_block": 20,
+                "bytes_per_point_block": 5,
+                "bytes_per_point_file": 8}
+
 def test_constructor():
+    # Check if block/tsmfile are instantiated correctly
     b = Block(*block_kwargs)
-    assert len(b) == 11
+    assert len(b) == 10
     t = TSMFile(*tsmfile_kwargs)
-    assert len(t) == 5
+    assert len(t) == 8
 
 
 def test_gather():
     inspect_output = gather(v1_file)
-    assert len(inspect_output) > 0
+    assert len(inspect_output) > 0 # check if has stuff
+
+

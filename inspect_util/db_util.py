@@ -32,17 +32,17 @@ def load_file_paths(dbrp_dir):
 
 @dataclass
 class Block:
-    blk: int
-    chk: int
-    offs: int
-    blk_len: int
-    dtype: str
+    block: int
+    checksum: int
+    offset: int
+    block_length: int
+    data_type: str
     min_time: datetime.datetime
     max_time: datetime.datetime
-    pts: int
-    enc: str
-    tag_len: int
-    tag_val_len: int
+    points: int
+    encoding: str
+    tag_length: int
+    # tag_val_length: int
 
     def __len__(self):
         return len(self.__dict__)
@@ -54,6 +54,9 @@ class TSMFile:
     min_blk: int
     max_blk: int
     idx_type: str
+    pts_per_blk: int
+    bytes_per_point_block: int
+    bytes_per_point_file: int
 
     def __len__(self):
         return len(self.__dict__)
@@ -66,9 +69,14 @@ def gather(v1_file):
     inspect_output = proc.stdout
     return inspect_output
 
+def parse_header(line: str):
+    line_list = line.lstrip().split('\t')
+    line_list = [i for i in line_list if i] # remove empties
+    return line_list
+
 
 # for file_path in load_file_paths(DBRP_DIR):
 #     subprocess.run(f"influx_inspect dumptsm -blocks {file_path}", shell=True)
 
-    
+ 
 

@@ -61,6 +61,15 @@ class TSMFile:
     def __len__(self):
         return len(self.__dict__)
 
+@dataclass
+class RawInspection:
+    header: str
+    body: str
+    file_stats: str
+
+    def __len__(self):
+        return len(self.__dict__)
+
 def gather(v1_file):
     proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
                                     shell=True,
@@ -68,6 +77,8 @@ def gather(v1_file):
                                     text=True)
     inspect_output = proc.stdout
     return inspect_output
+
+
 
 def parse_header(line: str):
     line_list = line.lstrip().split('\t')

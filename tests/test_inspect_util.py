@@ -1,7 +1,7 @@
 import pytest
 import sys
 import datetime
-from inspect_util.db_util import Block, TSMFile, gather
+from inspect_util.db_util import Block, TSMFile, gather, parse_header
 
 # Paths
 # v1 tsm
@@ -55,5 +55,9 @@ def test_constructor():
 def test_gather():
     inspect_output = gather(v1_file)
     assert len(inspect_output) > 0 # check if has stuff
+
+
+def test_header_parser():
+
 
 

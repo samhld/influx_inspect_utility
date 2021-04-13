@@ -31,6 +31,33 @@ def load_file_paths(dbrp_path):
                 file_paths.append(shard_path+name)
     return file_paths
 
+def to_tuples(dictionary):
+    for header, vals in dictionary.items():
+        tups = []
+        for val in vals:
+            tups.append((header, val))
+        yield tups
+
+def to_lines(tuples):
+    lines = []
+    for tup in zip(*tuples):
+        line = Metric("inspect_tsm")
+        for k, v in tup:
+            line.add_value(k, v)
+            lines.append(line)
+        yield line
+    return lines
+
+def format_values(values):
+    formatted = []
+    if values[0].isnumeric():
+        formatted = [int(val) for val in values]
+    for val in values:
+        if val.isnumeric():
+            
+
+
+
 @dataclass
 class Block:
     block: int
@@ -117,6 +144,7 @@ def inspect(v1_file) -> Inspection:
                           stdout=subprocess.PIPE,
                           text=True)
 
+    # A bunch of parsing
     inspect_output = proc.stdout
     lines = inspect_output.splitlines()
     file_name = lines[0][-23:]
@@ -159,5 +187,9 @@ def inspect(v1_file) -> Inspection:
 
 
 
- 
-
+def create_lines(insp: Inspection, per_block=False):
+    if per_block:
+        tups = to_tuples(insp.body)
+        lines = to_lines(tups)
+    
+    return lines

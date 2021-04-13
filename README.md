@@ -14,9 +14,9 @@ By running the utility and recording results to a time series database, you can 
 
 Ad hoc, a user/admin of InfluxDB might inspect the stats of a file with the below command:
 ```</path/to/shard/>$ influx_inspect dumptsm -blocks 000000001-000000001.tsm```
-This spits out a lot of data (example output shown in "Examples" below).  By default this script trims that data down a lot by not collecting per block information.  If the user/admin opts for per-block data, they can configure this with `per-block = "false"` in the configuration.  
+This spits out a lot of data (example output shown in "Examples" below).  By default this script trims that data down a lot by not collecting per block information.  If the user/admin opts for per-block data, they can configure this by setting `per-block` true ("Usage" describes this).  
 
-*Note: If configuring per-block data, pay attention to how much data this will actually be.  If you have a heavy workload (lots of files, lots of blocks per file), this could potentially increase cardinality of the InfluxDB instance to which you're writing by many tens of thousands.
+*Note: If configuring per-block data, pay attention to how much data this will actually be.  If you have a heavy workload (lots of files, lots of blocks per file), this could potentially increase cardinality of the InfluxDB instance to which you're writing by many tens of thousands.*
 
 ## Usage
 
@@ -42,6 +42,10 @@ Telegraf external plugin:
     - [parameters for configuration]
 * Version 2.X:
   - [parameters for configuration]
+
+Standalone:
+  - TBD
+
 
 ## Examples:
 
@@ -84,4 +88,4 @@ inspect_tsm,file=000000001-000000001.tsm,shard_id=211 series=22000i,blocks=1043i
 
 ### Input (per-block = "true")
 ```
-### *Standalone (TBD)*
+

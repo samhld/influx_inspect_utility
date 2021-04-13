@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 pytest = "*"
+influx-line-protocol = "*"
 
 [dev-packages]
 

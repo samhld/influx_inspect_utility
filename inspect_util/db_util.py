@@ -4,9 +4,9 @@ import datetime
 from dataclasses import dataclass
 import typing
 
-v1_dbrp_path = "/Users/samdillard/.influxdb/data/telegraf/autogen"
+v1_dbrp_path = "/Users/samdillard/.influxdb/data/float_int_low_card/autogen"
 # For testing
-v1_shard_path = f"{v1_dbrp_path}/106" 
+v1_shard_path = f"{v1_dbrp_path}/210" 
 v1_file_path = f"{v1_shard_path}/000000001-000000001.tsm"
 
 def load_shard_names(dbrp_path):
@@ -78,6 +78,7 @@ class Inspection:
     avg_block: int
     index_entries: int
     index_size: int
+    block: int=None
 
     def __len__(self):
         return len(self.__dict__)
@@ -121,8 +122,8 @@ def inspect(v1_file) -> Inspection:
     file_name = lines[0][-23:]
     timespan = lines[1][-43:]
     duration = lines[2].lstrip().split()[1]
-    series = lines[2].lstrip().split()[3]
-    size = lines[2].lstrip().split()[-1]
+    series = int(lines[2].lstrip().split()[3])
+    size = int(lines[2].lstrip().split()[-1])
     # Parse core table data
     headers = parse_header(lines[3])
     raw_rows = get_body_rows(lines)

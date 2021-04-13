@@ -85,7 +85,7 @@ Statistics
 ### Output (per-block = "false"):
 ```
 inspect_tsm,file=000000001-000000001.tsm,shard_id=211 series=22000i,blocks=1043i,block_data_size=161001i,min_block=26i,max_block=4141i,avg_block=152i,index_entries=1053i,index_size=113788i,points=752136i,int_s8b_compress_pct=6i,int_no_compress_pct=0i,int_rle_compress_pct=93i,timestamp_no_compress_pct=0i,timestamp_s8b_compress_pct=33i,timestamp_rle_compress_pct=66i 1618287395000000000
+```
 
 ### Input (per-block = "true")
-```
 

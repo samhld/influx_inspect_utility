@@ -5,8 +5,8 @@ from inspect_util.db_util import Block, TSMFile, Inspection, inspect, parse_head
 
 # Paths
 # v1 tsm
-v1_dbrp = "/Users/samdillard/.influxdb/data/telegraf/autogen"
-v1_shard = f"{v1_dbrp}/106"
+v1_dbrp = "/Users/samdillard/.influxdb/data/float_int_low_card/autogen"
+v1_shard = f"{v1_dbrp}/210"
 v1_file = f"{v1_shard}/000000001-000000001.tsm"
 
 #v2 tsm

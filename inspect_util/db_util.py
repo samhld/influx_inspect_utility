@@ -249,11 +249,12 @@ def create_lines(insp: TSMInspection, per_block=False):
     if per_block:
         tups = to_tuples(insp.body)
         per_block_lines = to_lines(tups)
+        new_block_lines = []
         for line in per_block_lines:
             line.add_tag('file', insp.file)
             line.add_tag('shard', insp.shard)
             line.with_timestamp(timestamp)
-            print(line)
+            new_block_lines.append(line)
 
     file_line = Metric("inspect_tsm")
     file_line.add_tag('file', insp.file)
@@ -274,7 +275,7 @@ def create_lines(insp: TSMInspection, per_block=False):
 
     if per_block:
         lines = []
-        for line in per_block_lines:
+        for line in new_block_lines:
             lines.append(line)
         lines.append(file_line)
         return lines

@@ -44,7 +44,10 @@ def to_lines(tuples, per_block=True):
         for tup in zip(*tuples):
             line = Metric("inspect_block")
             for k, v in tup:
-                line.add_value(k, v)
+                if k == 'blk':
+                    line.add_tag(k, v)
+                else:
+                    line.add_value(k, v)
                 lines.append(line)
             yield line
     return lines

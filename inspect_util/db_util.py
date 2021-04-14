@@ -49,15 +49,6 @@ def to_lines(tuples):
         yield line
     return lines
 
-# def format_values(values):
-#     formatted = []
-#     if values[0].isnumeric():
-#         formatted = [int(val) for val in values]
-#     for val in values:
-#         if val.isnumeric():
-        
-
-
 @dataclass
 class Block:
     block: int
@@ -159,7 +150,6 @@ def create_body_dict(headers: list, cleaned_rows: list) -> dict:
     for i, header, in enumerate(headers):
         body_dict[header] = [row[i] for row in cleaned_rows]
 
-    # for key, values in body_dict
     return body_dict
 
 def str_to_datetime(string):
@@ -183,15 +173,11 @@ def format_values(dictionary):
 
 def split_encoding_column(value_list, delim="/"):
     t_vals, v_vals = [], []
-    for val in values:
+    for val in value_list:
         t_val, v_val = val.split(delim)
         t_vals.append(t_val)
         v_vals.append(v_val)
     return t_vals, v_vals
-
-# def split_dict_values(dictionary):
-#     for key, values in dictionary.items():
-#         if key in 
 
 def inspect(v1_file) -> TSMInspection:
     proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
@@ -218,11 +204,17 @@ def inspect(v1_file) -> TSMInspection:
 
     # Parse per-block raw data
     raw_rows = get_body_rows(lines)
-    print(f"raw_rows 1: {raw_rows[0]}")
     cleaned_rows = parse_body_rows(raw_rows)
     body = create_body_dict(headers, cleaned_rows)
     body = format_values(body) # infer numerics and time
-    
+    # Split encoding columns (i.e. `enc_tv` -> ['time_encoding', 'value_encoding'])
+    for key, values in body.copy().items():
+        if key == 'enc_tv':
+            body['time_encoding'],body['value_encoding'] = split_encoding_column(values)
+        if key == 'len_tv':
+            body['time_length'], body['value_length'] = split_encoding_column(values)
+    del body['enc_tv']
+    del body['len_tv']
 
     # Parse remaining lines with inspection statistics
     rem_lines = lines[(4+len(raw_rows)):] 
@@ -253,7 +245,6 @@ def inspect(v1_file) -> TSMInspection:
                       avg_block=avg_block,
                       index_entries=index_entries,
                       index_size=index_size)
-
 
 
 def create_lines(insp: TSMInspection, per_block=False):

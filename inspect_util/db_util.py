@@ -1,6 +1,7 @@
 from os import listdir
 import subprocess
 import datetime
+import re
 from dataclasses import dataclass
 import typing
 
@@ -48,14 +49,13 @@ def to_lines(tuples):
         yield line
     return lines
 
-def format_values(values):
-    formatted = []
-    if values[0].isnumeric():
-        formatted = [int(val) for val in values]
-    for val in values:
-        if val.isnumeric():
-            
-
+# def format_values(values):
+#     formatted = []
+#     if values[0].isnumeric():
+#         formatted = [int(val) for val in values]
+#     for val in values:
+#         if val.isnumeric():
+        
 
 
 @dataclass
@@ -90,8 +90,11 @@ class TSMFile:
         return len(self.__dict__)
 
 @dataclass
-class Inspection:
-    file_name: str
+class TSMInspection:
+    file: str
+    db: str
+    rp: str
+    shard: str
     headers: list
     timespan: str
     duration: str
@@ -105,14 +108,33 @@ class Inspection:
     avg_block: int
     index_entries: int
     index_size: int
-    block: int=None
 
     def __len__(self):
         return len(self.__dict__)
 
-def clean_collection(text):
-    text = text.splitlines()
-    parse_header(text)
+@dataclass
+class BlockInspection:
+    file_name: str
+    shard: str
+    block_id: str
+    offset: int
+    length: int
+    dtype: int
+    min_time: str # datetime or int maybe?
+    points: int
+    encodings: str
+    '''
+    TO DO: split the encoding columns into below values
+    # time_encoding: str
+    # value_encoding: str
+    # time_encoding_length: int
+    # value_encoding_length: int
+    '''
+
+    
+# def clean_collection(text):
+#     text = text.splitlines()
+#     parse_header(text)
 
 def parse_header(line: str):
     line_list = line.lstrip().split('\t')
@@ -136,14 +158,51 @@ def create_body_dict(headers: list, cleaned_rows: list) -> dict:
     body_dict = dict()
     for i, header, in enumerate(headers):
         body_dict[header] = [row[i] for row in cleaned_rows]
+
+    # for key, values in body_dict
     return body_dict
 
-def inspect(v1_file) -> Inspection:
+def str_to_datetime(string):
+    dt = datetime.datetime.strptime(string, "%Y-%m-%dT%H:%M:%SZ")
+    return round(dt.timestamp())
+
+def format_values(dictionary):
+    new_dict = {}
+    pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
+    for k, values in dictionary.items():
+        if values[0].isnumeric():
+            new_values = [int(val) for val in values]
+            new_dict[k] = new_values
+        elif re.match(pattern, values[0]):
+            new_values = [str_to_datetime(val) for val in values]
+            new_dict[k] = new_values
+        else:
+            new_dict[k] = values
+
+    return new_dict
+
+def split_encoding_column(value_list, delim="/"):
+    t_vals, v_vals = [], []
+    for val in values:
+        t_val, v_val = val.split(delim)
+        t_vals.append(t_val)
+        v_vals.append(v_val)
+    return t_vals, v_vals
+
+# def split_dict_values(dictionary):
+#     for key, values in dictionary.items():
+#         if key in 
+
+def inspect(v1_file) -> TSMInspection:
     proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
                           shell=True,
                           stdout=subprocess.PIPE,
                           text=True)
 
+    path_info = v1_file.split("/")
+    db = path_info[-4]
+    rp = path_info[-3]
+    shard = path_info[-2]
     # A bunch of parsing
     inspect_output = proc.stdout
     lines = inspect_output.splitlines()
@@ -152,11 +211,18 @@ def inspect(v1_file) -> Inspection:
     duration = lines[2].lstrip().split()[1]
     series = int(lines[2].lstrip().split()[3])
     size = int(lines[2].lstrip().split()[-1])
+    
     # Parse core table data
     headers = parse_header(lines[3])
+    headers = [header.lower().replace(" ","_").replace("[t/v]", "tv") for header in headers] # format headers
+
+    # Parse per-block raw data
     raw_rows = get_body_rows(lines)
+    print(f"raw_rows 1: {raw_rows[0]}")
     cleaned_rows = parse_body_rows(raw_rows)
     body = create_body_dict(headers, cleaned_rows)
+    body = format_values(body) # infer numerics and time
+    
 
     # Parse remaining lines with inspection statistics
     rem_lines = lines[(4+len(raw_rows)):] 
@@ -170,7 +236,10 @@ def inspect(v1_file) -> Inspection:
     index_entries = int(rem_lines[4].lstrip().split()[1])
     index_size = int(rem_lines[4].lstrip().split()[3])
 
-    return Inspection(file_name=file_name,
+    return TSMInspection(file=file_name,
+                      db=db,
+                      rp=rp,
+                      shard=shard,
                       timespan=timespan,
                       duration=duration,
                       series=series,
@@ -187,9 +256,14 @@ def inspect(v1_file) -> Inspection:
 
 
 
-def create_lines(insp: Inspection, per_block=False):
+def create_lines(insp: TSMInspection, per_block=False):
     if per_block:
         tups = to_tuples(insp.body)
         lines = to_lines(tups)
-    
+
     return lines
+
+
+
+
+

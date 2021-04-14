@@ -180,8 +180,8 @@ def split_encoding_column(value_list, delim="/"):
 def inspect(v1_file) -> TSMInspection:
     proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
                           shell=True,
-                          stdout=subprocess.PIPE,
-                          text=True)
+                          text=True,
+                          capture_output=True)
 
     path_info = v1_file.split("/")
     db = path_info[-4]

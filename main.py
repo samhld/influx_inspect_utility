@@ -13,7 +13,10 @@ inspections = [util.inspect(file_path) for file_path in file_paths]
 all_lines = []
 for insp in inspections:
     lines = util.create_lines(insp, per_block=per_block)
-    all_lines += lines
+    if isinstance(lines, Metric):
+        print(lines)
+    else:
+        all_lines += lines
 
 batch = ""
 for line in all_lines:

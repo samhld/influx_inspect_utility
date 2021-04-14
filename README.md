@@ -8,7 +8,7 @@ The Inspect Utility is for running the `influx_inspect` InfluxDB disk utility on
 
 The `influx_inspect` utility is a fantastic tool for ad hoc looks into the file storage behavior of InfluxDB.  However, it only provides a look at a single state.  There is also a need to compare the state you're seeing now to a state it was in prior to now...and a state in the future.  Enter time series data!
 
-By running the utility and recording results to a time series database, you can now analyze the changes in this file system behavior over time.  This is important for monitoring the existence of anomalous performance degredation.
+By running the utility and recording results to a time series database, you can now analyze the changes in TSM file system behavior over time.  This is important for monitoring and catching anomalous storage performance degredation.
 
 ## How it works
 

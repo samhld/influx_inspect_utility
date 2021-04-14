@@ -1,14 +1,13 @@
-from os import listdir
+from os import listdir, getcwd
 import subprocess
 import datetime
 import re
 from dataclasses import dataclass
 from influx_line_protocol import Metric
 
-v1_dbrp_path = "/Users/samdillard/.influxdb/data/float_int_low_card/autogen"
 # For testing
-v1_shard_path = f"{v1_dbrp_path}/210" 
-v1_file_path = f"{v1_shard_path}/000000001-000000001.tsm"
+# v1_shard_path = f"{v1_dbrp_path}/210" 
+# v1_file_path = f"{v1_shard_path}/000000001-000000001.tsm"
 
 def load_shard_names(dbrp_path):
     shard_names = listdir(dbrp_path)

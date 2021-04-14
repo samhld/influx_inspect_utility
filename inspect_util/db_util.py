@@ -3,7 +3,7 @@ import subprocess
 import datetime
 import re
 from dataclasses import dataclass
-import typing
+from influx_line_protocol import Metric
 
 v1_dbrp_path = "/Users/samdillard/.influxdb/data/float_int_low_card/autogen"
 # For testing
@@ -67,19 +67,19 @@ class Block:
     def __len__(self):
         return len(self.__dict__)
 
-@dataclass
-class TSMFile:
-    blks: int
-    idx_size: int
-    min_blk: int
-    max_blk: int
-    idx_type: str
-    pts_per_blk: int
-    bytes_per_point_block: int
-    bytes_per_point_file: int
+# @dataclass
+# class TSMFile:
+#     blks: int
+#     idx_size: int
+#     min_blk: int
+#     max_blk: int
+#     idx_type: str
+#     pts_per_blk: int
+#     bytes_per_point_block: int
+#     bytes_per_point_file: int
 
-    def __len__(self):
-        return len(self.__dict__)
+#     def __len__(self):
+#         return len(self.__dict__)
 
 @dataclass
 class TSMInspection:
@@ -122,11 +122,6 @@ class BlockInspection:
     # time_encoding_length: int
     # value_encoding_length: int
     '''
-
-    
-# def clean_collection(text):
-#     text = text.splitlines()
-#     parse_header(text)
 
 def parse_header(line: str):
     line_list = line.lstrip().split('\t')
@@ -258,6 +253,7 @@ def create_lines(insp: TSMInspection, per_block=False):
             line.add_tag('file', insp.file)
             line.add_tag('shard', insp.shard)
             line.with_timestamp(timestamp)
+            print(line)
 
     file_line = Metric("inspect_tsm")
     file_line.add_tag('file', insp.file)

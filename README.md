@@ -20,21 +20,32 @@ This spits out a lot of data (example output shown in "Examples" below).  By def
 
 ## Usage
 
-### Configuration:
-In `config.py`:
+### Via Telegraf execd plugin:
+This can be be configured in the config below like below or it can be run with flags in in the [Telegraf execd plugin](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/execd).
+
+Config in `config.py`:
 ```
 # dbrp_path = "</path/to/database>
 # per-block = "false"
 ```
-Via Telegraf execd plugin:
-```
-</path/to/python3> </path/to/main.py> [flags]
+If you configure in the config file, you can simply add `/path/to/python3 /path/to/main.py` to your execd input plugin configuration
 
+If you choose to use flags in Telegraf, just add them at the end of your `command` field in the execd plugin config like below:
+```
+[inputs.execd]
+    command = ["/path/to/python3", "/path/to/main.py", "--dbrp_path=<dbrp_path>"]
+    signal = "none"
+    data_format = "influx"
+```
+All flags (not much to this :) ):
+```
 Flags:
 --dbrp_path=<dbrp_path>
---per-block  # calling flag sets to true
+--per_block  # calling flag sets to true
 ```
-Telegraf external plugin:
+This can be a big collection depending your workload.  If you're a user of this utility in the first place, you probably have a lot of TSM data.  Given this, it is recommended that you set a longer interval for this input with something like `interval = '1h'` in the execd config:
+
+### What it collects:
 * Version 1.X:
   - In-mem index
     - [parameters for configuration]
@@ -43,14 +54,11 @@ Telegraf external plugin:
 * Version 2.X:
   - [parameters for configuration]
 
-Standalone:
-  - TBD
 
+## Examples:
 
-# Examples:
-
-## Case: `per-block = "false"`
-### Input:
+### Case: `per-block = "false"`
+#### Input:
 ```                                                       
 Summary:
   File: 000000001-000000001.tsm
@@ -72,13 +80,13 @@ Statistics
     Total: 0.37 bytes/point
 ```
 
-### Output
+#### Output
 ```
 inspect_tsm,file=000000001-000000001.tsm,shard_id=211 series=22000i,blocks=1043i,block_data_size=161001i,min_block=26i,max_block=4141i,avg_block=152i,index_entries=1053i,index_size=113788i,points=752136i,int_s8b_compress_pct=6i,int_no_compress_pct=0i,int_rle_compress_pct=93i,timestamp_no_compress_pct=0i,timestamp_s8b_compress_pct=33i,timestamp_rle_compress_pct=66i 1618287395000000000
 ```
 
-## Case: `per-block = "true"`
-### Input:
+### Case: `per-block = "true"`
+#### Input:
 ```
 Summary:
   File: 000000001-000000001.tsm
@@ -125,7 +133,7 @@ Statistics
     Total: 198.00 bytes/point
 ```
 
-### Output:
+#### Output:
 ```
 inspect_block,blk=1008,file=000000001-000000001.tsm,shard=211 chk=1717154842i,ofs=103455476i,len=144i,type="int64",min_time=1618273680i,points=1000i,time_encoding="s8b",value_encoding="rle",time_length="129",value_length="12" 1618377871
 inspect_block,blk=1009,file=000000001-000000001.tsm,shard=211 chk=3368434896i,ofs=103610491i,len=26i,type="int64",min_time=1618285770i,points=1000i,time_encoding="rle",value_encoding="rle",time_length="12",value_length="12" 1618377871

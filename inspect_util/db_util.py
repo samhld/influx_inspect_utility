@@ -39,14 +39,15 @@ def to_tuples(dictionary):
             tups.append((header, val))
         yield tups
 
-def to_lines(tuples):
+def to_lines(tuples, per_block=True):
     lines = []
-    for tup in zip(*tuples):
-        line = Metric("inspect_tsm")
-        for k, v in tup:
-            line.add_value(k, v)
-            lines.append(line)
-        yield line
+    if per_block:
+        for tup in zip(*tuples):
+            line = Metric("inspect_block")
+            for k, v in tup:
+                line.add_value(k, v)
+                lines.append(line)
+            yield line
     return lines
 
 @dataclass
@@ -105,7 +106,7 @@ class TSMInspection:
 
 @dataclass
 class BlockInspection:
-    file_name: str
+    file: str
     shard: str
     block_id: str
     offset: int
@@ -248,11 +249,41 @@ def inspect(v1_file) -> TSMInspection:
 
 
 def create_lines(insp: TSMInspection, per_block=False):
+    timestamp = round(datetime.datetime.now().timestamp())
+
     if per_block:
         tups = to_tuples(insp.body)
-        lines = to_lines(tups)
+        per_block_lines = to_lines(tups)
+        for line in per_block_lines:
+            line.add_tag('file', insp.file)
+            line.add_tag('shard', insp.shard)
+            line.with_timestamp(timestamp)
 
-    return lines
+    file_line = Metric("inspect_tsm")
+    file_line.add_tag('file', insp.file)
+    file_line.add_tag('db', insp.db)
+    file_line.add_tag('rp', insp.rp)
+    file_line.add_tag('shard', insp.shard)
+    file_line.add_value('timespan', insp.timespan)
+    file_line.add_value('duration', insp.duration)
+    file_line.add_value('series', insp.series)
+    file_line.add_value('size', insp.size)
+    file_line.add_value('min_block', insp.min_block)
+    file_line.add_value('max_block', insp.max_block)
+    file_line.add_value('avg_block', insp.avg_block)
+    file_line.add_value('index_entries', insp.index_entries)
+    file_line.add_value('index_size', insp.index_size)
+    file_line.with_timestamp(timestamp)
+
+
+    if per_block:
+        lines = []
+        for line in per_block_lines:
+            lines.append(line)
+        lines.append(file_line)
+        return lines
+    else:
+        return file_line
 
 
 

@@ -285,7 +285,7 @@ def create_lines(insp: TSMInspection, per_block=False):
     file_line.add_tag('db', insp.db)
     file_line.add_tag('rp', insp.rp)
     file_line.add_tag('shard', insp.shard)
-    file_line.add_value('timespan', insp.timespan)
+    # file_line.add_value('timespan', insp.timespan)
     file_line.add_value('duration', insp.duration)
     file_line.add_value('series', insp.series)
     file_line.add_value('size', insp.size)

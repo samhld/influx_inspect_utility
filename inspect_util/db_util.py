@@ -42,7 +42,7 @@ def to_lines(tuples, per_block=True):
     lines = []
     if per_block:
         for tup in zip(*tuples):
-            line = Metric("inspect_block")
+            line = Metric("nspect_block")
             for k, v in tup:
                 if k == 'blk':
                     line.add_tag(k, v)
@@ -51,6 +51,28 @@ def to_lines(tuples, per_block=True):
                 lines.append(line)
             yield line
     return lines
+
+def create_timestamp(precision = 's'):
+    '''
+    Generates a timestamp to be used at end of line of Line Protocol.
+    The precision can be set to seconds, milliseconds, microseconds, or nanoseconds.
+    Less precision is achieved with rounding the timestamp to the passed precison
+    and then adding zeros as  necessary to keep the timestamp length constant.
+    '''
+    now  = datetime.datetime.now()
+    ts = now.timestamp()
+    if precision == ('s' or 'S'):
+        ts = round(ts)
+        return(ts*10**9)
+    elif precision == ('ms' or 'MS'):
+        ts = round(ts*10**3)
+        return(ts*10**6)
+    elif precision == ('us' or 'US'):
+        ts = round(ts*10**6)
+        return(ts*10**3)
+    elif precision == ('ns' or 'NS'):
+        ts = round(ts*10**9)
+        return(ts)
 
 @dataclass
 class Block:
@@ -246,7 +268,7 @@ def inspect(v1_file) -> TSMInspection:
 
 
 def create_lines(insp: TSMInspection, per_block=False):
-    timestamp = round(datetime.datetime.now().timestamp())
+    timestamp = create_timestamp()
 
     if per_block:
         tups = to_tuples(insp.body)

@@ -12,6 +12,7 @@ if cfg.loop:
         inspections = [util.inspect(file_path) for file_path in file_paths]
         all_lines = []
         for insp in inspections:
+            lines = util.create_lines(insp, per_block=cfg.per_block)
             if isinstance(lines, Metric):
                 print(lines)
             else:

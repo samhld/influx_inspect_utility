@@ -75,37 +75,6 @@ def create_timestamp(precision = 's'):
         return(ts)
 
 @dataclass
-class Block:
-    block: int
-    checksum: int
-    offset: int
-    block_length: int
-    data_type: str
-    min_time: datetime.datetime
-    max_time: datetime.datetime
-    points: int
-    encoding: str
-    tag_length: int
-    # tag_val_length: int
-
-    def __len__(self):
-        return len(self.__dict__)
-
-# @dataclass
-# class TSMFile:
-#     blks: int
-#     idx_size: int
-#     min_blk: int
-#     max_blk: int
-#     idx_type: str
-#     pts_per_blk: int
-#     bytes_per_point_block: int
-#     bytes_per_point_file: int
-
-#     def __len__(self):
-#         return len(self.__dict__)
-
-@dataclass
 class TSMInspection:
     file: str
     db: str
@@ -127,25 +96,6 @@ class TSMInspection:
 
     def __len__(self):
         return len(self.__dict__)
-
-@dataclass
-class BlockInspection:
-    file: str
-    shard: str
-    block_id: str
-    offset: int
-    length: int
-    dtype: int
-    min_time: str # datetime or int maybe?
-    points: int
-    encodings: str
-    '''
-    TO DO: split the encoding columns into below values
-    # time_encoding: str
-    # value_encoding: str
-    # time_encoding_length: int
-    # value_encoding_length: int
-    '''
 
 def parse_header(line: str):
     line_list = line.lstrip().split('\t')

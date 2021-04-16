@@ -2,7 +2,9 @@ from os import listdir, getcwd
 import subprocess
 import datetime
 import re
+from typing import List
 from dataclasses import dataclass
+from functools import reduce
 from influx_line_protocol import Metric
 
 # For testing
@@ -38,18 +40,17 @@ def to_tuples(dictionary):
             tups.append((header, val))
         yield tups
 
-def to_lines(tuples, per_block=True):
+def to_lines(tuples):
     lines = []
-    if per_block:
-        for tup in zip(*tuples):
-            line = Metric("inspect_block")
-            for k, v in tup:
-                if k == 'blk':
-                    line.add_tag(k, v)
-                else:
-                    line.add_value(k, v)
-                lines.append(line)
-            yield line
+    for tup in zip(*tuples):
+        line = Metric("inspect_block")
+        for k, v in tup:
+            if k in ('blk', 'type'):
+                line.add_tag(k, v)
+            else:
+                line.add_value(k, v)
+            lines.append(line)
+        yield line
     return lines
 
 def create_timestamp(precision = 's'):
@@ -74,28 +75,63 @@ def create_timestamp(precision = 's'):
         ts = round(ts*10**9)
         return(ts)
 
-@dataclass
+# @dataclass
+# class TSMInspection:
+#     file: str
+#     db: str
+#     rp: str
+#     shard: str
+#     headers: list
+#     timespan: str
+#     duration: str
+#     series: str
+#     size: str
+#     body: dict
+#     blocks: int
+#     blocks_size: int
+#     min_block: int
+#     max_block: int
+#     avg_block: int
+#     index_entries: int
+#     index_size: int
+
+#     def __len__(self):
+#         return len(self.__dict__)
+
 class TSMInspection:
-    file: str
-    db: str
-    rp: str
-    shard: str
-    headers: list
-    timespan: str
-    duration: str
-    series: str
-    size: str
-    body: dict
-    blocks: int
-    blocks_size: int
-    min_block: int
-    max_block: int
-    avg_block: int
-    index_entries: int
-    index_size: int
+    def __init__(self, file: str=None, rp: str=None, db: str=None, shard: str=None, duration: str=None,
+                       timespan: str=None, series: int=None, size: int=None, body: List=None, blocks: int=None, 
+                       blocks_size: int=None, min_block: int=None, max_block: int=None, avg_block: int=None, 
+                       index_entries: int=None, index_size: int=None):
+
+        self.file       = file
+        self.db         = db
+        self.shard      = shard
+        self.timespan   = timespan
+        self.series  = series
+        self.size = size
+        self.body = body
+        self.blocks = blocks
+        self.blocks_size = blocks_size
+        self.min_block = min_block
+        self.max_block = max_block
+        self.avg_block = avg_block
+        self.index_entries = index_entries
+        self.index_size = index_size
 
     def __len__(self):
         return len(self.__dict__)
+
+class FullInspection:
+    def __init__(self, inspections: List[TSMInspection]=None):
+        self.inspections = inspections
+
+    def total_points(self):
+        all_points = 0
+        for insp in self.inspections:
+            for points in insp.body["points"]:
+                all_points += points
+        return all_points
 
 def parse_header(line: str):
     line_list = line.lstrip().split('\t')
@@ -149,11 +185,13 @@ def split_encoding_column(value_list, delim="/"):
         v_vals.append(v_val)
     return t_vals, v_vals
 
-def inspect(v1_file) -> TSMInspection:
+def inspect(v1_file, per_block=False) -> TSMInspection:
+
+# if per_block:
     proc = subprocess.run(f"influx_inspect dumptsm -blocks {v1_file}",
-                          shell=True,
-                          text=True,
-                          capture_output=True)
+                        shell=True,
+                        text=True,
+                        capture_output=True)
 
     path_info = v1_file.split("/")
     db = path_info[-4]
@@ -199,22 +237,21 @@ def inspect(v1_file) -> TSMInspection:
     index_size = int(rem_lines[4].lstrip().split()[3])
 
     return TSMInspection(file=file_name,
-                      db=db,
-                      rp=rp,
-                      shard=shard,
-                      timespan=timespan,
-                      duration=duration,
-                      series=series,
-                      size=size,
-                      headers=headers,
-                      body=body,
-                      blocks=blocks,
-                      blocks_size=blocks_size,
-                      min_block=min_block,
-                      max_block=max_block,
-                      avg_block=avg_block,
-                      index_entries=index_entries,
-                      index_size=index_size)
+                    db=db,
+                    rp=rp,
+                    shard=shard,
+                    timespan=timespan,
+                    duration=duration,
+                    series=series,
+                    size=size,
+                    body=body,
+                    blocks=blocks,
+                    blocks_size=blocks_size,
+                    min_block=min_block,
+                    max_block=max_block,
+                    avg_block=avg_block,
+                    index_entries=index_entries,
+                    index_size=index_size)
 
 
 def create_lines(insp: TSMInspection, per_block=False):
